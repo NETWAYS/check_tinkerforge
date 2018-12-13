@@ -77,15 +77,25 @@ def handle_sigalrm(signum, frame, timeout=None):
     output('CRITICAL - Plugin timed out after %d seconds' % timeout, 2)
 
 class TF:
-    def __init__(self, host, port, verbose):
+    def __init__(self, host, port, secret, verbose):
         self.host = host
         self.port = port
+        self.secret = secret
         self.verbose = verbose
         self.temp = None
         self.ipc = IPConnection()
         self.ipc.register_callback(IPConnection.CALLBACK_ENUMERATE, self.cb_enumerate)
 
         self.ipc.connect(self.host, self.port)
+
+        if self.secret:
+            try:
+                self.ipc.authenticate(self.secret)
+                if self.verbose:
+                    print("DEBUG: Authentication succeeded.")
+            except:
+                output("UNKNOWN - Cannot authenticate", 3)
+
         self.ipc.enumerate()
 
     def cb_enumerate(self, uid, connected_uid, position, hardware_version, firmware_version, device_identifier, enumeration_type):
@@ -120,10 +130,11 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-H', '--host', help='The host address of the Tinkerforge device', required=True)
     parser.add_argument("-P", "--port", help="Port (default=4223)", type=int, default=4223)
+    parser.add_argument("-S", "--secret", help="Authentication secret")
     parser.add_argument("-u", "--uid", help="UID from Bricklet")
     args = parser.parse_args()
 
-    tf = TF(args.host, args.port, args.verbose)
+    tf = TF(args.host, args.port, args.secret, args.verbose)
 
     timeout = 10
     ticks = 0
