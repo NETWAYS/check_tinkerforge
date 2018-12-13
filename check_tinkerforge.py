@@ -54,9 +54,6 @@ from tinkerforge.bricklet_temperature import Temperature
 
 __version__ = '0.0.1'
 
-# TODO: Class
-temp_uid = 0;
-
 def output(label, state=0, lines=None, perfdata=None, name='Tinkerforge'):
     if lines is None:
         lines = []
@@ -80,9 +77,10 @@ def handle_sigalrm(signum, frame, timeout=None):
     output('CRITICAL - Plugin timed out after %d seconds' % timeout, 2)
 
 class TF:
-    def __init__(self, host, port):
+    def __init__(self, host, port, verbose):
         self.host = host
         self.port = port
+        self.verbose = verbose
         self.temp = None
         self.ipc = IPConnection()
         self.ipc.register_callback(IPConnection.CALLBACK_ENUMERATE, self.cb_enumerate)
@@ -94,10 +92,22 @@ class TF:
         if enumeration_type == IPConnection.ENUMERATION_TYPE_DISCONNECTED:
             return
 
+        if self.verbose:
+            print("UID:               " + uid)
+            print("Enumeration Type:  " + str(enumeration_type))
+            print("Connected UID:     " + connected_uid)
+            print("Position:          " + position)
+            print("Hardware Version:  " + str(hardware_version))
+            print("Firmware Version:  " + str(firmware_version))
+            print("Device Identifier: " + str(device_identifier))
+            print("")
+
         # https://www.tinkerforge.com/en/doc/Software/Device_Identifier.html
         # 2113 - Temperature Bricklet 2.0
         # 216 - Temperature Bricklet
-        print "DEBUG: Detected device identifier %s" % device_identifier
+        if self.verbose:
+            print "DEBUG: Detected device identifier %s" % device_identifier
+
         if device_identifier == Temperature.DEVICE_IDENTIFIER:
             self.temp = Temperature(uid, self.ipc)
 
@@ -107,13 +117,13 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(prog=prog)
     parser.add_argument('-V', '--version', action='version', version='%(prog)s v' + sys.modules[__name__].__version__)
+    parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-H', '--host', help='The host address of the Tinkerforge device', required=True)
     parser.add_argument("-P", "--port", help="Port (default=4223)", type=int, default=4223)
     parser.add_argument("-u", "--uid", help="UID from Bricklet")
-    #TODO
     args = parser.parse_args()
 
-    tf = TF(args.host, args.port)
+    tf = TF(args.host, args.port, args.verbose)
 
     timeout = 10
     ticks = 0
