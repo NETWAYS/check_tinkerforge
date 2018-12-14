@@ -1,7 +1,7 @@
 #!/usr/bin/env
 # COPYRIGHT:
 #
-# This software is Copyright (c) 2018 NETWAYS GmbH, Matthias Jentsch
+# This software is Copyright (c) 2018 NETWAYS GmbH, Michael Friedrich
 #                                <support@netways.de>
 #
 # (Except where explicitly superseded by other copyright notices)
@@ -51,6 +51,7 @@ from functools import partial
 
 from tinkerforge.ip_connection import IPConnection
 from tinkerforge.bricklet_temperature import Temperature
+from tinkerforge.bricklet_ambient_light_v2 import BrickletAmbientLightV2
 
 __version__ = '0.0.1'
 
@@ -100,6 +101,7 @@ class TF(object):
         self.verbose = verbose
         self.device_type = None
         self.temp = None
+        self.al = None
 
         self.type_humidity = "humidity"
         self.type_temperature = "temperature"
@@ -153,6 +155,10 @@ class TF(object):
         if device_identifier == Temperature.DEVICE_IDENTIFIER:
             self.temp = Temperature(uid, self.ipcon)
             self.device_type = self.type_temperature
+
+        if device_identifier == BrickletAmbientLightV2.DEVICE_IDENTIFIER:
+            self.al = BrickletAmbientLightV2(uid, self.ipcon)
+            self.device_type = self.type_ambient_light
 
     def parse_threshold(self, t):
         # ranges
@@ -217,6 +223,28 @@ class TF(object):
 
             output("Temperature is %s degrees celcius" % temp_value, status, [], perfdata)
 
+        if self.device_type == self.type_ambient_light:
+            ticks = 0
+            if uid:
+                self.al = BrickletAmbientLightV2(uid, self.ipcon)
+            else:
+                while not self.al:
+                    time.sleep(0.1)
+                    ticks = ticks + 1
+                    if ticks > self.timeout:
+                        output("Timeout %s s reached while detecting bricklet. Please use -u to specify the device UID.", 3)
+
+            # Ambient Light
+            al_value = self.al.get_illuminance() / 100.0
+
+            status = self.eval_thresholds(al_value, warning, critical)
+
+            perfdata = {
+                "illuminance": al_value
+            }
+
+            output("Illuminance is %s lx" % al_value, status, [], perfdata)
+
 if __name__ == '__main__':
     prog = os.path.basename(sys.argv[0])
 
@@ -240,3 +268,5 @@ if __name__ == '__main__':
     tf.connect(args.type, args.uid)
 
     tf.check(args.uid, args.warning, args.critical)
+
+    tf.disconnect()
