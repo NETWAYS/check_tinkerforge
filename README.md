@@ -12,24 +12,25 @@
 
 ## About
 
-Tinkerforge allows you to combine bricks and bricklets for your own infrastructure.
+[Tinkerforge](https://www.tinkerforge.com) allows you to combine bricks and bricklets for your own infrastructure.
 This includes sensors for temperature, humidity, PTC and ambient light, etc. in order
 to example monitor your datacenter infrastructure.
 
-![Tinkerforge Bricks](doc/images/tinkerforge_bricks.jpg)
-![Tinkerforge Bricklets](doc/images/tinkerforge_bricklets.jpg)
+<img src="https://github.com/NETWAYS/check_tinkerforge/blob/master/doc/images/tinkerforge_bricks.jpg" alt="Tinkerforge Bricks" height="300"> <img src="https://github.com/NETWAYS/check_tinkerforge/blob/master/doc/images/tinkerforge_bricklets.jpg" alt="Tinkerforge Bricks" height="300">
 
 This Icinga plugin allows you to check the following bricklets:
 
-- PTC
-- Temperature
-- Humidity
-- Ambient Light
+* PTC
+* Temperature
+* Humidity
+* Ambient Light
 
 Additional features:
 
 * Auto-detect first bricklet from a given type
 * Verbose listing of all connected bricklets
+
+
 
 ## License
 
