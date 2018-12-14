@@ -76,27 +76,44 @@ def output(label, state=0, lines=None, perfdata=None, name='Tinkerforge'):
 def handle_sigalrm(signum, frame, timeout=None):
     output('CRITICAL - Plugin timed out after %d seconds' % timeout, 2)
 
-class TF:
-    def __init__(self, host, port, secret, verbose):
+class TF(object):
+    def __init__(self, host, port, secret, timeout, verbose):
         self.host = host
         self.port = port
         self.secret = secret
+        self.timeout = timeout
         self.verbose = verbose
+        self.device_type = None
         self.temp = None
-        self.ipc = IPConnection()
-        self.ipc.register_callback(IPConnection.CALLBACK_ENUMERATE, self.cb_enumerate)
 
-        self.ipc.connect(self.host, self.port)
+        self.type_humidity = "humidity"
+        self.type_temperature = "temperature"
+        self.type_ptc = "ptc"
+        self.type_ambient_light = "ambient_light"
+
+    def connect(self, device_type, uid):
+        self.device_type = device_type
+
+        self.ipcon = IPConnection()
+        self.ipcon.register_callback(IPConnection.CALLBACK_ENUMERATE, self.cb_enumerate)
+
+        self.ipcon.connect(self.host, self.port)
+
+        if self.verbose:
+            print "Connected to host '%s' on port %s." % (self.host, self.port)
 
         if self.secret:
             try:
-                self.ipc.authenticate(self.secret)
+                self.ipcon.authenticate(self.secret)
                 if self.verbose:
                     print("DEBUG: Authentication succeeded.")
             except:
                 output("UNKNOWN - Cannot authenticate", 3)
 
-        self.ipc.enumerate()
+        self.ipcon.enumerate()
+
+        if self.verbose:
+            print "Enumerate request sent."
 
     def cb_enumerate(self, uid, connected_uid, position, hardware_version, firmware_version, device_identifier, enumeration_type):
         if enumeration_type == IPConnection.ENUMERATION_TYPE_DISCONNECTED:
@@ -119,7 +136,31 @@ class TF:
             print "DEBUG: Detected device identifier %s" % device_identifier
 
         if device_identifier == Temperature.DEVICE_IDENTIFIER:
-            self.temp = Temperature(uid, self.ipc)
+            self.temp = Temperature(uid, self.ipcon)
+            self.device_type = self.type_temperature
+
+    def check(self, uid, warning, critical):
+        if self.device_type == self.type_temperature:
+            ticks = 0
+            if uid:
+                self.temp = Temperature(uid, self.ipcon)
+            else:
+                while not self.temp:
+                    time.sleep(0.1)
+                    ticks = ticks + 1
+                    if ticks > self.timeout:
+                        output("UNKNOWN - Timeout %s s reached while detecting bricklet. Please use -u to specify the device UID.", 3)
+
+            # Temperature
+            temp_value = self.temp.get_temperature() / 100.0
+            status = 0
+
+            # TODO: Thresholds, status
+            perfdata = {
+                "temperature": temp_value
+            }
+
+            output("Temperature is %s degrees celcius" % temp_value, status, [], perfdata)
 
 if __name__ == '__main__':
     prog = os.path.basename(sys.argv[0])
@@ -132,24 +173,18 @@ if __name__ == '__main__':
     parser.add_argument("-P", "--port", help="Port (default=4223)", type=int, default=4223)
     parser.add_argument("-S", "--secret", help="Authentication secret")
     parser.add_argument("-u", "--uid", help="UID from Bricklet")
+    parser.add_argument("-T", "--type", help="Bricklet type. Supported: 'temperature', 'humidity', 'ambient_light', 'ptc'", required=True)
+    parser.add_argument("-w", "--warning", help="Warning threshold")
+    parser.add_argument("-c", "--critical", help="Critical threshold")
+    parser.add_argument("-t", "--timeout", help="Timeout in seconds", type=int, default=10)
     args = parser.parse_args()
 
-    tf = TF(args.host, args.port, args.secret, args.verbose)
+    signal.signal(signal.SIGALRM, partial(handle_sigalrm, timeout=args.timeout))
+    signal.alarm(args.timeout)
 
-    timeout = 10
-    ticks = 0
-    if args.uid:
-        tf.temp = Temperature(args.uid, ipc)
-    else:
-        while not tf.temp:
-            time.sleep(0.1)
-            ticks = ticks + 1
-            if ticks > timeout:
-                print "ERROR: Timeout reached while detecting bricklet. Please use -u to specify the device UID."
-                sys.exit(3)
+    tf = TF(args.host, args.port, args.secret, args.timeout, args.verbose)
+    tf.connect(args.type, args.uid)
 
-    # Temperature
-    temp_value = tf.temp.get_temperature() / 100.0
+    tf.check(args.uid, args.warning, args.critical)
 
-    print "Temperature is %s degrees celcius" % temp_value
 
