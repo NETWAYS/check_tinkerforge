@@ -50,6 +50,7 @@ import time
 from functools import partial
 
 from tinkerforge.ip_connection import IPConnection
+from tinkerforge.bricklet_ptc_v2 import BrickletPTCV2
 from tinkerforge.bricklet_temperature import Temperature
 from tinkerforge.bricklet_ambient_light_v2 import BrickletAmbientLightV2
 from tinkerforge.bricklet_humidity_v2 import BrickletHumidityV2
@@ -101,14 +102,15 @@ class TF(object):
         self.timeout = timeout
         self.verbose = verbose
         self.device_type = None
+        self.ptc = None
         self.temp = None
         self.al = None
         self.hum = None
 
-        self.type_humidity = "humidity"
-        self.type_temperature = "temperature"
         self.type_ptc = "ptc"
+        self.type_temperature = "temperature"
         self.type_ambient_light = "ambient_light"
+        self.type_humidity = "humidity"
 
     def connect(self, device_type, uid):
         self.device_type = device_type
@@ -137,6 +139,13 @@ class TF(object):
     def cb_enumerate(self, uid, connected_uid, position, hardware_version, firmware_version, device_identifier, enumeration_type):
         if enumeration_type == IPConnection.ENUMERATION_TYPE_DISCONNECTED:
             return
+
+        # Note: The order is important, detect PTC before Humidity
+        #
+        # https://www.tinkerforge.com/en/doc/Software/Bricklets/PTCV2_Bricklet_Python.html
+        if device_identifier == BrickletPTCV2.DEVICE_IDENTIFIER:
+            self.ptc = BrickletPTCV2(uid, self.ipcon)
+            self.device_type = self.type_ptc
 
         # https://www.tinkerforge.com/en/doc/Software/Bricklets/Temperature_Bricklet_Python.html
         if device_identifier == Temperature.DEVICE_IDENTIFIER:
@@ -205,6 +214,30 @@ class TF(object):
         return status
 
     def check(self, uid, warning, critical):
+        # PTC
+        # https://www.tinkerforge.com/en/doc/Software/Bricklets/PTCV2_Bricklet_Python.html
+        if self.device_type == self.type_ptc:
+            ticks = 0
+            if uid:
+                self.ptc = BrickletPTCV2(uid, self.ipcon)
+            else:
+                # TODO: refactor
+                while not self.ptc:
+                    time.sleep(0.1)
+                    ticks = ticks + 1
+                    if ticks > self.timeout * 10:
+                        output("Timeout %s s reached while detecting bricklet. Please use -u to specify the device UID." % self.timeout, 3)
+
+            ptc_value = self.ptc.get_temperature() / 100.0
+
+            status = self.eval_thresholds(ptc_value, warning, critical)
+
+            perfdata = {
+                "temperature": ptc_value
+            }
+
+            output("Temperature is %s degrees celcius" % ptc_value, status, [], perfdata)
+
         # Temperature
         # https://www.tinkerforge.com/en/doc/Software/Bricklets/Temperature_Bricklet_Python.html
         if self.device_type == self.type_temperature:
