@@ -52,6 +52,7 @@ from functools import partial
 from tinkerforge.ip_connection import IPConnection
 from tinkerforge.bricklet_temperature import Temperature
 from tinkerforge.bricklet_ambient_light_v2 import BrickletAmbientLightV2
+from tinkerforge.bricklet_humidity_v2 import BrickletHumidityV2
 
 __version__ = '0.0.1'
 
@@ -102,6 +103,7 @@ class TF(object):
         self.device_type = None
         self.temp = None
         self.al = None
+        self.hum = None
 
         self.type_humidity = "humidity"
         self.type_temperature = "temperature"
@@ -136,6 +138,21 @@ class TF(object):
         if enumeration_type == IPConnection.ENUMERATION_TYPE_DISCONNECTED:
             return
 
+        # https://www.tinkerforge.com/en/doc/Software/Bricklets/Temperature_Bricklet_Python.html
+        if device_identifier == Temperature.DEVICE_IDENTIFIER:
+            self.temp = Temperature(uid, self.ipcon)
+            self.device_type = self.type_temperature
+
+        # https://www.tinkerforge.com/en/doc/Software/Bricklets/AmbientLightV2_Bricklet_Python.html
+        if device_identifier == BrickletAmbientLightV2.DEVICE_IDENTIFIER:
+            self.al = BrickletAmbientLightV2(uid, self.ipcon)
+            self.device_type = self.type_ambient_light
+
+        # https://www.tinkerforge.com/en/doc/Software/Bricklets/HumidityV2_Bricklet_Python.html
+        if device_identifier == BrickletHumidityV2.DEVICE_IDENTIFIER:
+            self.hum = BrickletHumidityV2(uid, self.ipcon)
+            self.device_type = self.type_humidity
+
         if self.verbose:
             print("UID:               " + uid)
             print("Enumeration Type:  " + str(enumeration_type))
@@ -144,21 +161,8 @@ class TF(object):
             print("Hardware Version:  " + str(hardware_version))
             print("Firmware Version:  " + str(firmware_version))
             print("Device Identifier: " + str(device_identifier))
+            print("Device Type:       " + str(self.device_type))
             print("")
-
-        # https://www.tinkerforge.com/en/doc/Software/Device_Identifier.html
-        # 2113 - Temperature Bricklet 2.0
-        # 216 - Temperature Bricklet
-        if self.verbose:
-            print "DEBUG: Detected device identifier %s" % device_identifier
-
-        if device_identifier == Temperature.DEVICE_IDENTIFIER:
-            self.temp = Temperature(uid, self.ipcon)
-            self.device_type = self.type_temperature
-
-        if device_identifier == BrickletAmbientLightV2.DEVICE_IDENTIFIER:
-            self.al = BrickletAmbientLightV2(uid, self.ipcon)
-            self.device_type = self.type_ambient_light
 
     def parse_threshold(self, t):
         # ranges
@@ -201,18 +205,20 @@ class TF(object):
         return status
 
     def check(self, uid, warning, critical):
+        # Temperature
+        # https://www.tinkerforge.com/en/doc/Software/Bricklets/Temperature_Bricklet_Python.html
         if self.device_type == self.type_temperature:
             ticks = 0
             if uid:
                 self.temp = Temperature(uid, self.ipcon)
             else:
+                # TODO: refactor
                 while not self.temp:
                     time.sleep(0.1)
                     ticks = ticks + 1
-                    if ticks > self.timeout:
-                        output("Timeout %s s reached while detecting bricklet. Please use -u to specify the device UID.", 3)
+                    if ticks > self.timeout * 10:
+                        output("Timeout %s s reached while detecting bricklet. Please use -u to specify the device UID." % self.timeout, 3)
 
-            # Temperature
             temp_value = self.temp.get_temperature() / 100.0
 
             status = self.eval_thresholds(temp_value, warning, critical)
@@ -223,18 +229,20 @@ class TF(object):
 
             output("Temperature is %s degrees celcius" % temp_value, status, [], perfdata)
 
+        # Ambient Light
+        # https://www.tinkerforge.com/en/doc/Software/Bricklets/AmbientLightV2_Bricklet_Python.html
         if self.device_type == self.type_ambient_light:
             ticks = 0
             if uid:
                 self.al = BrickletAmbientLightV2(uid, self.ipcon)
             else:
+                # TODO: refactor
                 while not self.al:
                     time.sleep(0.1)
                     ticks = ticks + 1
-                    if ticks > self.timeout:
-                        output("Timeout %s s reached while detecting bricklet. Please use -u to specify the device UID.", 3)
+                    if ticks > self.timeout * 10:
+                        output("Timeout %s s reached while detecting bricklet. Please use -u to specify the device UID." % self.timeout, 3)
 
-            # Ambient Light
             al_value = self.al.get_illuminance() / 100.0
 
             status = self.eval_thresholds(al_value, warning, critical)
@@ -244,6 +252,30 @@ class TF(object):
             }
 
             output("Illuminance is %s lx" % al_value, status, [], perfdata)
+
+        # Humidity
+        # https://www.tinkerforge.com/en/doc/Software/Bricklets/HumidityV2_Bricklet_Python.html
+        if self.device_type == self.type_humidity:
+            ticks = 0
+            if uid:
+                self.hum = BrickletHumidityV2(uid, self.ipcon)
+            else:
+                # TODO: refactor
+                while not self.hum:
+                    time.sleep(0.1)
+                    ticks = ticks + 1
+                    if ticks > self.timeout * 10:
+                        output("Timeout %s s reached while detecting bricklet. Please use -u to specify the device UID." % self.timeout, 3)
+
+            hum_value = self.hum.get_humidity() / 100.0
+
+            status = self.eval_thresholds(hum_value, warning, critical)
+
+            perfdata = {
+                "humidity": hum_value
+            }
+
+            output("Humidity is %s %%HR" % hum_value, status, [], perfdata)
 
 if __name__ == '__main__':
     prog = os.path.basename(sys.argv[0])
