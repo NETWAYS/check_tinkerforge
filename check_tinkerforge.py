@@ -1,4 +1,4 @@
-#!/usr/bin/env
+#!/usr/bin/env python
 # COPYRIGHT:
 #
 # This software is Copyright (c) 2018 NETWAYS GmbH, Michael Friedrich
