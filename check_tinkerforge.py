@@ -60,7 +60,22 @@ def output(label, state=0, lines=None, perfdata=None, name='Tinkerforge'):
     if perfdata is None:
         perfdata = {}
 
-    pluginoutput = name + ': ' + str(label)
+    pluginoutput = ""
+
+    if state == 0:
+        pluginoutput += "OK"
+    elif state == 1:
+        pluginoutput += "WARNING"
+    elif state == 2:
+        pluginoutput += "CRITICAL"
+    elif state == 3:
+        pluginoutput += "UNKNOWN"
+    else:
+        raise "ERROR: State programming error."
+
+    pluginoutput += " - "
+
+    pluginoutput += name + ': ' + str(label)
 
     if len(lines):
         pluginoutput += ' - '
@@ -74,7 +89,7 @@ def output(label, state=0, lines=None, perfdata=None, name='Tinkerforge'):
     sys.exit(state)
 
 def handle_sigalrm(signum, frame, timeout=None):
-    output('CRITICAL - Plugin timed out after %d seconds' % timeout, 2)
+    output('Plugin timed out after %d seconds' % timeout, 3)
 
 class TF(object):
     def __init__(self, host, port, secret, timeout, verbose):
@@ -108,7 +123,7 @@ class TF(object):
                 if self.verbose:
                     print("DEBUG: Authentication succeeded.")
             except:
-                output("UNKNOWN - Cannot authenticate", 3)
+                output("Cannot authenticate", 3)
 
         self.ipcon.enumerate()
 
@@ -139,6 +154,46 @@ class TF(object):
             self.temp = Temperature(uid, self.ipcon)
             self.device_type = self.type_temperature
 
+    def parse_threshold(self, t):
+        # ranges
+        if ":" in t:
+            return t.split(":")
+        else:
+            return [ t ]
+
+    def eval_threshold_generic(self, val, threshold):
+        t_arr = self.parse_threshold(threshold)
+
+        # if we only have one value, treat this as 0..value range
+        if len(t_arr) == 1:
+            if self.verbose:
+                print "Evaluating thresholds, single %s on value %s" % (" ".join(t_arr), val)
+
+            if val > (float(t_arr[0])):
+                return True
+        else:
+            if self.verbose:
+                print "Evaluating thresholds, rangle %s on value %s" % (":".join(t_arr), val)
+
+            if val < float(t_arr[0]) or val > float(t_arr[1]):
+                return True
+
+        return False
+
+
+    def eval_thresholds(self, val, warning, critical):
+        status = 0
+
+        if warning:
+            if self.eval_threshold_generic(val, warning):
+                status = 1
+
+        if critical:
+            if self.eval_threshold_generic(val, critical):
+                status = 2
+
+        return status
+
     def check(self, uid, warning, critical):
         if self.device_type == self.type_temperature:
             ticks = 0
@@ -149,13 +204,13 @@ class TF(object):
                     time.sleep(0.1)
                     ticks = ticks + 1
                     if ticks > self.timeout:
-                        output("UNKNOWN - Timeout %s s reached while detecting bricklet. Please use -u to specify the device UID.", 3)
+                        output("Timeout %s s reached while detecting bricklet. Please use -u to specify the device UID.", 3)
 
             # Temperature
             temp_value = self.temp.get_temperature() / 100.0
-            status = 0
 
-            # TODO: Thresholds, status
+            status = self.eval_thresholds(temp_value, warning, critical)
+
             perfdata = {
                 "temperature": temp_value
             }
@@ -164,7 +219,6 @@ class TF(object):
 
 if __name__ == '__main__':
     prog = os.path.basename(sys.argv[0])
-    output = partial(output, name=prog)
 
     parser = argparse.ArgumentParser(prog=prog)
     parser.add_argument('-V', '--version', action='version', version='%(prog)s v' + sys.modules[__name__].__version__)
@@ -174,8 +228,8 @@ if __name__ == '__main__':
     parser.add_argument("-S", "--secret", help="Authentication secret")
     parser.add_argument("-u", "--uid", help="UID from Bricklet")
     parser.add_argument("-T", "--type", help="Bricklet type. Supported: 'temperature', 'humidity', 'ambient_light', 'ptc'", required=True)
-    parser.add_argument("-w", "--warning", help="Warning threshold")
-    parser.add_argument("-c", "--critical", help="Critical threshold")
+    parser.add_argument("-w", "--warning", help="Warning threshold. Single value or range, e.g. '20:50'.")
+    parser.add_argument("-c", "--critical", help="Critical threshold. Single vluae or range, e.g. '25:45'.")
     parser.add_argument("-t", "--timeout", help="Timeout in seconds", type=int, default=10)
     args = parser.parse_args()
 
@@ -186,5 +240,3 @@ if __name__ == '__main__':
     tf.connect(args.type, args.uid)
 
     tf.check(args.uid, args.warning, args.critical)
-
-
