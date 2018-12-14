@@ -301,14 +301,16 @@ class TF(object):
                         output("Timeout %s s reached while detecting bricklet. Please use -u to specify the device UID." % self.timeout, 3)
 
             hum_value = self.hum.get_humidity() / 100.0
+            hum_temp_value = self.hum.get_temperature() / 100.0
 
             status = self.eval_thresholds(hum_value, warning, critical)
 
             perfdata = {
-                "humidity": hum_value
+                "humidity": hum_value,
+                "temperature": hum_temp_value
             }
 
-            output("Humidity is %s %%HR" % hum_value, status, [], perfdata)
+            output("Humidity is %s %%HR (Temperature is %s degrees celcius)" % (hum_value, hum_temp_value), status, [], perfdata)
 
 if __name__ == '__main__':
     prog = os.path.basename(sys.argv[0])
