@@ -325,7 +325,7 @@ if __name__ == '__main__':
     parser.add_argument("-T", "--type", help="Bricklet type. Supported: 'temperature', 'humidity', 'ambient_light', 'ptc'", required=True)
     parser.add_argument("-w", "--warning", help="Warning threshold. Single value or range, e.g. '20:50'.")
     parser.add_argument("-c", "--critical", help="Critical threshold. Single vluae or range, e.g. '25:45'.")
-    parser.add_argument("-t", "--timeout", help="Timeout in seconds", type=int, default=10)
+    parser.add_argument("-t", "--timeout", help="Timeout in seconds (default 10s)", type=int, default=10)
     args = parser.parse_args()
 
     signal.signal(signal.SIGALRM, partial(handle_sigalrm, timeout=args.timeout))

@@ -30,8 +30,6 @@ Additional features:
 * Auto-detect first bricklet from a given type
 * Verbose listing of all connected bricklets
 
-
-
 ## License
 
 This project is licensed under the terms of the GNU General Public License Version 2.
@@ -45,7 +43,8 @@ You may also send us an email to [support@netways.de](mailto:support@netways.de)
 
 ## Requirements
 
-- tinkerforge Python library from Pypi
+* Python 2.7+
+* `tinkerforge` Python library from Pypi
 
 ## Installation
 
@@ -136,4 +135,4 @@ WARNING - Tinkerforge: Illuminance is 959.41 lx|'illuminance'=959.41
 
 ## Configuration
 
-TDB, Icinga 2 ITL CheckCommand.
+An example for Icinga 2 can be found in the [tinkerforge.conf](tinkerforge.conf).
