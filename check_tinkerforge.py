@@ -49,7 +49,7 @@ import os
 import time
 from functools import partial
 
-from tinkerforge.ip_connection import IPConnection
+from tinkerforge.ip_connection import IPConnection, Error as IPConnectionError
 from tinkerforge.bricklet_ptc_v2 import BrickletPTCV2
 from tinkerforge.bricklet_temperature import Temperature
 from tinkerforge.bricklet_ambient_light_v2 import BrickletAmbientLightV2
@@ -75,7 +75,7 @@ def output(label, state=0, lines=None, perfdata=None, name='Tinkerforge'):
     elif state == 3:
         pluginoutput += "UNKNOWN"
     else:
-        raise "ERROR: State programming error."
+        raise RuntimeError("ERROR: State programming error.")
 
     pluginoutput += " - "
 
@@ -131,7 +131,7 @@ class TF(object):
                 self.ipcon.authenticate(self.secret)
                 if self.verbose:
                     print("DEBUG: Authentication succeeded.")
-            except:
+            except IPConnectionError:
                 output("Cannot authenticate", 3)
 
         self.ipcon.enumerate()
