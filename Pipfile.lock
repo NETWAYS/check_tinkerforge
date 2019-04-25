@@ -1,0 +1,28 @@
+{
+    "_meta": {
+        "hash": {
+            "sha256": "74bccf0f482ad74a694d8c8a5a643a9d02012a76cf695c410909207c3305b876"
+        },
+        "pipfile-spec": 6,
+        "requires": {
+            "python_version": "2.7"
+        },
+        "sources": [
+            {
+                "name": "pypi",
+                "url": "https://pypi.org/simple",
+                "verify_ssl": true
+            }
+        ]
+    },
+    "default": {
+        "tinkerforge": {
+            "hashes": [
+                "sha256:0e825bbce2ccced8e7d2729a355c892042309804052243dc8c64fc9269cded16"
+            ],
+            "index": "pypi",
+            "version": "==2.1.21"
+        }
+    },
+    "develop": {}
+}
