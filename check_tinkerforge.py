@@ -57,6 +57,7 @@ from tinkerforge.bricklet_humidity_v2 import BrickletHumidityV2
 
 __version__ = '0.0.1'
 
+
 def output(label, state=0, lines=None, perfdata=None, name='Tinkerforge'):
     if lines is None:
         lines = []
@@ -91,8 +92,10 @@ def output(label, state=0, lines=None, perfdata=None, name='Tinkerforge'):
     print pluginoutput
     sys.exit(state)
 
+
 def handle_sigalrm(signum, frame, timeout=None):
     output('Plugin timed out after %d seconds' % timeout, 3)
+
 
 class TF(object):
     def __init__(self, host, port, secret, timeout, verbose):
@@ -136,7 +139,8 @@ class TF(object):
         if self.verbose:
             print "Enumerate request sent."
 
-    def cb_enumerate(self, uid, connected_uid, position, hardware_version, firmware_version, device_identifier, enumeration_type):
+    def cb_enumerate(self, uid, connected_uid, position, hardware_version,
+                     firmware_version, device_identifier, enumeration_type):
         if enumeration_type == IPConnection.ENUMERATION_TYPE_DISCONNECTED:
             return
 
@@ -173,12 +177,13 @@ class TF(object):
             print("Device Type:       " + str(self.device_type))
             print("")
 
-    def parse_threshold(self, t):
+    @staticmethod
+    def parse_threshold(t):
         # ranges
         if ":" in t:
             return t.split(":")
         else:
-            return [ t ]
+            return [t]
 
     def eval_threshold_generic(self, val, threshold):
         t_arr = self.parse_threshold(threshold)
@@ -198,7 +203,6 @@ class TF(object):
                 return True
 
         return False
-
 
     def eval_thresholds(self, val, warning, critical):
         status = 0
@@ -226,7 +230,8 @@ class TF(object):
                     time.sleep(0.1)
                     ticks = ticks + 1
                     if ticks > self.timeout * 10:
-                        output("Timeout %s s reached while detecting bricklet. Please use -u to specify the device UID." % self.timeout, 3)
+                        output("Timeout %s s reached while detecting bricklet. "
+                               "Please use -u to specify the device UID." % self.timeout, 3)
 
             ptc_value = self.ptc.get_temperature() / 100.0
 
@@ -250,7 +255,8 @@ class TF(object):
                     time.sleep(0.1)
                     ticks = ticks + 1
                     if ticks > self.timeout * 10:
-                        output("Timeout %s s reached while detecting bricklet. Please use -u to specify the device UID." % self.timeout, 3)
+                        output("Timeout %s s reached while detecting bricklet. "
+                               "Please use -u to specify the device UID." % self.timeout, 3)
 
             temp_value = self.temp.get_temperature() / 100.0
 
@@ -274,7 +280,8 @@ class TF(object):
                     time.sleep(0.1)
                     ticks = ticks + 1
                     if ticks > self.timeout * 10:
-                        output("Timeout %s s reached while detecting bricklet. Please use -u to specify the device UID." % self.timeout, 3)
+                        output("Timeout %s s reached while detecting bricklet. "
+                               "Please use -u to specify the device UID." % self.timeout, 3)
 
             al_value = self.al.get_illuminance() / 100.0
 
@@ -298,7 +305,8 @@ class TF(object):
                     time.sleep(0.1)
                     ticks = ticks + 1
                     if ticks > self.timeout * 10:
-                        output("Timeout %s s reached while detecting bricklet. Please use -u to specify the device UID." % self.timeout, 3)
+                        output("Timeout %s s reached while detecting bricklet. "
+                               "Please use -u to specify the device UID." % self.timeout, 3)
 
             hum_value = self.hum.get_humidity() / 100.0
             hum_temp_value = self.hum.get_temperature() / 100.0
@@ -310,7 +318,9 @@ class TF(object):
                 "temperature": hum_temp_value
             }
 
-            output("Humidity is %s %%HR (Temperature is %s degrees celcius)" % (hum_value, hum_temp_value), status, [], perfdata)
+            output("Humidity is %s %%HR (Temperature is %s degrees celcius)" % (hum_value, hum_temp_value),
+                   status, [], perfdata)
+
 
 if __name__ == '__main__':
     prog = os.path.basename(sys.argv[0])
@@ -322,7 +332,8 @@ if __name__ == '__main__':
     parser.add_argument("-P", "--port", help="Port (default=4223)", type=int, default=4223)
     parser.add_argument("-S", "--secret", help="Authentication secret")
     parser.add_argument("-u", "--uid", help="UID from Bricklet")
-    parser.add_argument("-T", "--type", help="Bricklet type. Supported: 'temperature', 'humidity', 'ambient_light', 'ptc'", required=True)
+    parser.add_argument("-T", "--type", required=True,
+                        help="Bricklet type. Supported: 'temperature', 'humidity', 'ambient_light', 'ptc'")
     parser.add_argument("-w", "--warning", help="Warning threshold. Single value or range, e.g. '20:50'.")
     parser.add_argument("-c", "--critical", help="Critical threshold. Single vluae or range, e.g. '25:45'.")
     parser.add_argument("-t", "--timeout", help="Timeout in seconds (default 10s)", type=int, default=10)
