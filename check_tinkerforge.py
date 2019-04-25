@@ -329,7 +329,7 @@ if __name__ == '__main__':
     parser.add_argument('-H', '--host', help='The host address of the Tinkerforge device', required=True)
     parser.add_argument("-P", "--port", help="Port (default=4223)", type=int, default=4223)
     parser.add_argument("-S", "--secret", help="Authentication secret")
-    # parser.add_argument("-u", "--uid", help="UID from Bricklet")
+    parser.add_argument("-u", "--uid", help="UID from Bricklet")
     parser.add_argument("-T", "--type", required=True,
                         help="Bricklet type. Supported: 'temperature', 'humidity', 'ambient_light', 'ptc'")
     parser.add_argument("-w", "--warning", help="Warning threshold. Single value or range, e.g. '20:50'.")
