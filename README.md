@@ -16,7 +16,8 @@
 This includes sensors for temperature, humidity, PTC and ambient light, etc. in order
 to example monitor your datacenter infrastructure.
 
-<img src="https://github.com/NETWAYS/check_tinkerforge/blob/master/doc/images/tinkerforge_bricks.jpg" alt="Tinkerforge Bricks" height="300"> <img src="https://github.com/NETWAYS/check_tinkerforge/blob/master/doc/images/tinkerforge_bricklets.jpg" alt="Tinkerforge Bricks" height="300">
+<img src="https://github.com/NETWAYS/check_tinkerforge/raw/master/doc/images/tinkerforge_bricks.jpg" alt="Tinkerforge Bricks" height="300">
+<img src="https://github.com/NETWAYS/check_tinkerforge/raw/master/doc/images/tinkerforge_bricklets.jpg" alt="Tinkerforge Bricks" height="300">
 
 This Icinga plugin allows you to check the following bricklets:
 
