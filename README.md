@@ -57,10 +57,9 @@ Put this plugin into the Icinga PluginDir location.
 ## Run
 
 ```
-check_tinkerforge.py --help
-usage: check_tinkerforge.py [-h] [-V] [-v] -H HOST [-P PORT] [-S SECRET]
-                            [-u UID] -T TYPE [-w WARNING] [-c CRITICAL]
-                            [-t TIMEOUT]
+$ ./check_tinkerforge.py --help
+usage: check_tinkerforge.py [-h] [-V] [-v] -H HOST [-P PORT] [-S SECRET] -T
+                            TYPE [-w WARNING] [-c CRITICAL] [-t TIMEOUT]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -70,7 +69,6 @@ optional arguments:
   -P PORT, --port PORT  Port (default=4223)
   -S SECRET, --secret SECRET
                         Authentication secret
-  -u UID, --uid UID     UID from Bricklet
   -T TYPE, --type TYPE  Bricklet type. Supported: 'temperature', 'humidity',
                         'ambient_light', 'ptc'
   -w WARNING, --warning WARNING
@@ -80,7 +78,7 @@ optional arguments:
                         Critical threshold. Single vluae or range, e.g.
                         '25:45'.
   -t TIMEOUT, --timeout TIMEOUT
-                        Timeout in seconds
+                        Timeout in seconds (default 10s)
 ```
 
 ### Thresholds
