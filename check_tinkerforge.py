@@ -45,7 +45,6 @@
 import argparse
 import signal
 import sys
-import os
 import time
 from functools import partial
 
@@ -324,9 +323,7 @@ class TF(object):
 
 
 if __name__ == '__main__':
-    prog = os.path.basename(sys.argv[0])
-
-    parser = argparse.ArgumentParser(prog=prog)
+    parser = argparse.ArgumentParser()
     parser.add_argument('-V', '--version', action='version', version='%(prog)s v' + sys.modules[__name__].__version__)
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-H', '--host', help='The host address of the Tinkerforge device', required=True)
