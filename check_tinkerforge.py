@@ -115,10 +115,11 @@ class TF(object):
         self.type_ambient_light = "ambient_light"
         self.type_humidity = "humidity"
 
+        self.ipcon = IPConnection()
+
     def connect(self, device_type, uid):
         self.device_type = device_type
 
-        self.ipcon = IPConnection()
         self.ipcon.register_callback(IPConnection.CALLBACK_ENUMERATE, self.cb_enumerate)
 
         self.ipcon.connect(self.host, self.port)
@@ -346,5 +347,3 @@ if __name__ == '__main__':
     tf.connect(args.type, args.uid)
 
     tf.check(args.uid, args.warning, args.critical)
-
-    tf.disconnect()
