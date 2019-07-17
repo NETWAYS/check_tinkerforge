@@ -56,6 +56,7 @@ from tinkerforge.bricklet_humidity_v2 import BrickletHumidityV2
 
 __version__ = '0.9.1'
 
+
 def output(label, state=0, lines=None, perfdata=None, name='Tinkerforge'):
     if lines is None:
         lines = []
@@ -240,6 +241,7 @@ class TF(object):
             perfdata = {
                 "temperature": ptc_value
             }
+            
             output("Temperature is %s degrees celcius" % ptc_value, status, [], perfdata)
 
         # Temperature
