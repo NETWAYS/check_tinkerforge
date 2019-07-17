@@ -87,7 +87,7 @@ def output(label, state=0, lines=None, perfdata=None, name='Tinkerforge'):
         pluginoutput += '|'
         pluginoutput += ' '.join(["'" + key + "'" + '=' + str(value) for key, value in perfdata.iteritems()])
 
-    print pluginoutput
+    print(pluginoutput)
     sys.exit(state)
 
 
@@ -124,7 +124,7 @@ class TF(object):
         self.ipcon.connect(self.host, self.port)
 
         if self.verbose:
-            print "Connected to host '%s' on port %s." % (self.host, self.port)
+            print("Connected to host '%s' on port %s." % (self.host, self.port))
 
         if self.secret:
             try:
@@ -137,11 +137,10 @@ class TF(object):
         self.ipcon.enumerate()
 
         if self.verbose:
-            print "Enumerate request sent."
+            print("Enumerate request sent.")
 
     def cb_enumerate(self, uid, connected_uid, position, hardware_version,
                      firmware_version, device_identifier, enumeration_type):
-        #ENUMERATION_TYPE_DISCONNECTED
         if enumeration_type == IPConnection.ENUMERATION_TYPE_DISCONNECTED:
             return
 
@@ -192,13 +191,13 @@ class TF(object):
         # if we only have one value, treat this as 0..value range
         if len(t_arr) == 1:
             if self.verbose:
-                print "Evaluating thresholds, single %s on value %s" % (" ".join(t_arr), val)
+                print("Evaluating thresholds, single %s on value %s" % (" ".join(t_arr), val))
 
             if val > (float(t_arr[0])):
                 return True
         else:
             if self.verbose:
-                print "Evaluating thresholds, rangle %s on value %s" % (":".join(t_arr), val)
+                print("Evaluating thresholds, rangle %s on value %s" % (":".join(t_arr), val))
 
             if val < float(t_arr[0]) or val > float(t_arr[1]):
                 return True
