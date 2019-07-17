@@ -56,7 +56,6 @@ from tinkerforge.bricklet_humidity_v2 import BrickletHumidityV2
 
 __version__ = '0.9.1'
 
-
 def output(label, state=0, lines=None, perfdata=None, name='Tinkerforge'):
     if lines is None:
         lines = []
@@ -115,6 +114,7 @@ class TF(object):
         self.type_humidity = "humidity"
 
         self.ipcon = IPConnection()
+        self.ipcon.set_timeout(self.timeout)
 
     def connect(self, device_type):
         self.device_type = device_type
@@ -141,6 +141,7 @@ class TF(object):
 
     def cb_enumerate(self, uid, connected_uid, position, hardware_version,
                      firmware_version, device_identifier, enumeration_type):
+        #ENUMERATION_TYPE_DISCONNECTED
         if enumeration_type == IPConnection.ENUMERATION_TYPE_DISCONNECTED:
             return
 
@@ -240,7 +241,6 @@ class TF(object):
             perfdata = {
                 "temperature": ptc_value
             }
-
             output("Temperature is %s degrees celcius" % ptc_value, status, [], perfdata)
 
         # Temperature
