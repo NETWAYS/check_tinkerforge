@@ -86,7 +86,7 @@ def output(label, state=0, lines=None, perfdata=None, name='Tinkerforge'):
 
     if perfdata:
         pluginoutput += '|'
-        pluginoutput += ' '.join(["'" + key + "'" + '=' + str(value) for key, value in perfdata.iteritems()])
+        pluginoutput += ' '.join(["'" + key + "'" + '=' + str(value) for key, value in perfdata.items()])
 
     print(pluginoutput)
     sys.exit(state)
@@ -120,9 +120,9 @@ class TF(object):
     def connect(self, device_type):
         self.device_type = device_type
 
-        self.ipcon.register_callback(IPConnection.CALLBACK_ENUMERATE, self.cb_enumerate)
-
         self.ipcon.connect(self.host, self.port)
+
+        self.ipcon.register_callback(IPConnection.CALLBACK_ENUMERATE, self.cb_enumerate)
 
         if self.verbose:
             print("Connected to host '%s' on port %s." % (self.host, self.port))
@@ -241,7 +241,7 @@ class TF(object):
             perfdata = {
                 "temperature": ptc_value
             }
-            
+
             output("Temperature is %s degrees celcius" % ptc_value, status, [], perfdata)
 
         # Temperature
