@@ -86,9 +86,9 @@ def output(label, state=0, lines=None, perfdata=None, name='Tinkerforge'):
 
     if perfdata:
         pluginoutput += '|'
-        pluginoutput += ' '.join(["'" + key + "'" + '=' + str(value) for key, value in perfdata.iteritems()])
+        pluginoutput += ' '.join(["'" + key + "'" + '=' + str(value) for key, value in perfdata.items()])
 
-    print pluginoutput
+    print(pluginoutput)
     sys.exit(state)
 
 
@@ -115,16 +115,17 @@ class TF(object):
         self.type_humidity = "humidity"
 
         self.ipcon = IPConnection()
+        self.ipcon.set_timeout(self.timeout)
 
-    def connect(self, device_type):
+    def connect(self, device_type, run_enumeration):
         self.device_type = device_type
-
-        self.ipcon.register_callback(IPConnection.CALLBACK_ENUMERATE, self.cb_enumerate)
 
         self.ipcon.connect(self.host, self.port)
 
+        self.ipcon.register_callback(IPConnection.CALLBACK_ENUMERATE, self.cb_enumerate)
+
         if self.verbose:
-            print "Connected to host '%s' on port %s." % (self.host, self.port)
+            print("Connected to host '%s' on port %s." % (self.host, self.port))
 
         if self.secret:
             try:
@@ -134,10 +135,11 @@ class TF(object):
             except IPConnectionError:
                 output("Cannot authenticate", 3)
 
-        self.ipcon.enumerate()
+        if run_enumeration is True:
+            self.ipcon.enumerate()
+            if self.verbose:
+                print("Enumerate request sent.")
 
-        if self.verbose:
-            print "Enumerate request sent."
 
     def cb_enumerate(self, uid, connected_uid, position, hardware_version,
                      firmware_version, device_identifier, enumeration_type):
@@ -191,13 +193,13 @@ class TF(object):
         # if we only have one value, treat this as 0..value range
         if len(t_arr) == 1:
             if self.verbose:
-                print "Evaluating thresholds, single %s on value %s" % (" ".join(t_arr), val)
+                print("Evaluating thresholds, single %s on value %s" % (" ".join(t_arr), val))
 
             if val > (float(t_arr[0])):
                 return True
         else:
             if self.verbose:
-                print "Evaluating thresholds, rangle %s on value %s" % (":".join(t_arr), val)
+                print("Evaluating thresholds, rangle %s on value %s" % (":".join(t_arr), val))
 
             if val < float(t_arr[0]) or val > float(t_arr[1]):
                 return True
@@ -341,6 +343,12 @@ if __name__ == '__main__':
     signal.alarm(args.timeout)
 
     tf = TF(args.host, args.port, args.secret, args.timeout, args.verbose)
-    tf.connect(args.type)
+
+    run_enumeration = False
+
+    if args.uid is None:
+        run_enumeration = True
+
+    tf.connect(args.type, run_enumeration)
 
     tf.check(args.uid, args.warning, args.critical)
