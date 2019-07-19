@@ -117,7 +117,7 @@ class TF(object):
         self.ipcon = IPConnection()
         self.ipcon.set_timeout(self.timeout)
 
-    def connect(self, device_type):
+    def connect(self, device_type, run_enumeration):
         self.device_type = device_type
 
         self.ipcon.connect(self.host, self.port)
@@ -135,10 +135,11 @@ class TF(object):
             except IPConnectionError:
                 output("Cannot authenticate", 3)
 
-        self.ipcon.enumerate()
+        if run_enumeration is True:
+            self.ipcon.enumerate()
+            if self.verbose:
+                print("Enumerate request sent.")
 
-        if self.verbose:
-            print("Enumerate request sent.")
 
     def cb_enumerate(self, uid, connected_uid, position, hardware_version,
                      firmware_version, device_identifier, enumeration_type):
@@ -342,6 +343,12 @@ if __name__ == '__main__':
     signal.alarm(args.timeout)
 
     tf = TF(args.host, args.port, args.secret, args.timeout, args.verbose)
-    tf.connect(args.type)
+
+    run_enumeration = False
+
+    if args.uid is None:
+        run_enumeration = True
+
+    tf.connect(args.type, run_enumeration)
 
     tf.check(args.uid, args.warning, args.critical)
