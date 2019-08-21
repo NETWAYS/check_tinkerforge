@@ -35,12 +35,12 @@ Additional features:
 
 This project is licensed under the terms of the GNU General Public License Version 2.
 
-This software is Copyright (c) 2018 by NETWAYS GmbH [support@netways.de](mailto:support@netways.de).
+This software is Copyright (c) 2018 by NETWAYS GmbH support@netways.de
 
 ## Support
 
 For bugs and feature requests please head over to our [issue tracker](https://github.com/NETWAYS/check_tinkerforge/issues).
-You may also send us an email to [support@netways.de](mailto:support@netways.de) for general questions or to get technical support.
+You may also send us an email to support@netways.de for general questions or to get technical support.
 
 ## Requirements
 
