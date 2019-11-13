@@ -53,6 +53,7 @@ from tinkerforge.bricklet_ptc_v2 import BrickletPTCV2
 from tinkerforge.bricklet_temperature import Temperature
 from tinkerforge.bricklet_ambient_light_v2 import BrickletAmbientLightV2
 from tinkerforge.bricklet_humidity_v2 import BrickletHumidityV2
+from tinkerforge.bricklet_distance_ir_v2 import BrickletDistanceIRV2
 
 __version__ = '1.0.0'
 
@@ -108,11 +109,13 @@ class TF(object):
         self.temp = None
         self.al = None
         self.hum = None
+        self.dist = None
 
         self.type_ptc = "ptc"
         self.type_temperature = "temperature"
         self.type_ambient_light = "ambient_light"
         self.type_humidity = "humidity"
+        self.type_distance = "distance"
 
         self.ipcon = IPConnection()
         self.ipcon.set_timeout(self.timeout)
@@ -140,7 +143,6 @@ class TF(object):
             if self.verbose:
                 print("Enumerate request sent.")
 
-
     def cb_enumerate(self, uid, connected_uid, position, hardware_version,
                      firmware_version, device_identifier, enumeration_type):
         if enumeration_type == IPConnection.ENUMERATION_TYPE_DISCONNECTED:
@@ -167,6 +169,11 @@ class TF(object):
         if device_identifier == BrickletHumidityV2.DEVICE_IDENTIFIER:
             self.hum = BrickletHumidityV2(uid, self.ipcon)
             self.device_type = self.type_humidity
+
+        # https://www.tinkerforge.com/en/doc/Software/Bricklets/DistanceIRV2_Bricklet_Python.html
+        if device_identifier == BrickletDistanceIRV2.DEVICE_IDENTIFIER:
+            self.dist = BrickletDistanceIRV2(uid, self.ipcon)
+            self.device_type = self.type_distance
 
         if self.verbose:
             print("UID:               " + uid)
@@ -323,6 +330,31 @@ class TF(object):
             output("Humidity is %s %%HR (Temperature is %s degrees celcius)" % (hum_value, hum_temp_value),
                    status, [], perfdata)
 
+        # Distance
+        # https://www.tinkerforge.com/en/doc/Software/Bricklets/DistanceIRV2_Bricklet_Python.html
+        if self.device_type == self.type_distance:
+            ticks = 0
+            if uid:
+                self.dist = BrickletDistanceIRV2(uid, self.ipcon)
+            else:
+                # TODO: refactor
+                while not self.dist:
+                    time.sleep(0.1)
+                    ticks = ticks + 1
+                    if ticks > self.timeout * 10:
+                        output("Timeout %s s reached while detecting bricklet. "
+                               "Please use -u to specify the device UID." % self.timeout, 3)
+
+            dist_value = self.dist.get_distance() / 10.0
+
+            status = self.eval_thresholds(dist_value, warning, critical)
+
+            perfdata = {
+                "distance": dist_value,
+            }
+
+            output("Distance is %s cm" % dist_value, status, [], perfdata)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -333,7 +365,7 @@ if __name__ == '__main__':
     parser.add_argument("-S", "--secret", help="Authentication secret")
     parser.add_argument("-u", "--uid", help="UID from Bricklet")
     parser.add_argument("-T", "--type", required=True,
-                        help="Bricklet type. Supported: 'temperature', 'humidity', 'ambient_light', 'ptc'")
+                        help="Bricklet type. Supported: 'temperature', 'humidity', 'ambient_light', 'ptc', 'distance'")
     parser.add_argument("-w", "--warning", help="Warning threshold. Single value or range, e.g. '20:50'.")
     parser.add_argument("-c", "--critical", help="Critical threshold. Single vluae or range, e.g. '25:45'.")
     parser.add_argument("-t", "--timeout", help="Timeout in seconds (default 10s)", type=int, default=10)
