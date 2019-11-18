@@ -55,7 +55,7 @@ from tinkerforge.bricklet_ambient_light_v2 import BrickletAmbientLightV2
 from tinkerforge.bricklet_humidity_v2 import BrickletHumidityV2
 from tinkerforge.bricklet_distance_ir_v2 import BrickletDistanceIRV2
 
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 
 
 def output(label, state=0, lines=None, perfdata=None, name='Tinkerforge'):
