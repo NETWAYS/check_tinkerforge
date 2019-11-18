@@ -25,6 +25,7 @@ This Icinga plugin allows you to check the following bricklets:
 * Temperature
 * Humidity
 * Ambient Light
+* Distance IR
 
 Additional features:
 
@@ -132,6 +133,16 @@ OK - Tinkerforge: Illuminance is 958.69 lx|'illuminance'=958.69
 
 check_tinkerforge.py -H 10.0.10.163 -T ambient_light -w 900
 WARNING - Tinkerforge: Illuminance is 959.41 lx|'illuminance'=959.41
+```
+
+#### Distance IR
+
+```
+check_tinkerforge.py -H 10.0.10.163 -T distance
+OK - Tinkerforge: Distance is 21.6 cm|'distance'=21.6
+
+check_tinkerforge.py -H 10.0.10.163 -T distance -w 50:60
+WARNING - Tinkerforge: Distance is 40.1 cm|'distance'=40.1
 ```
 
 ## Configuration
