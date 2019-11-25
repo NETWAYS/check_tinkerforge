@@ -56,7 +56,7 @@ from tinkerforge.bricklet_humidity_v2 import BrickletHumidityV2
 from tinkerforge.bricklet_distance_ir_v2 import BrickletDistanceIRV2
 from tinkerforge.bricklet_motion_detector_v2 import BrickletMotionDetectorV2
 
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 
 
 def output(label, state=0, lines=None, perfdata=None, name='Tinkerforge'):
