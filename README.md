@@ -150,10 +150,10 @@ WARNING - Tinkerforge: Distance is 40.1 cm|'distance'=40.1
 
 ```
 check_tinkerforge.py -H 10.0.10.163 -T motion
-OK - Tinkerforge: 
+OK - Tinkerforge: No motion detected|'motion'=0
 
 check_tinkerforge.py -H 10.0.10.163 -T distance -w 50:60
-WARNING - Tinkerforge: Distance is 40.1 cm|'distance'=40.1
+WARNING - Tinkerforge: Motion detected!|'motion'=1
 ```
 
 

@@ -380,12 +380,14 @@ class TF(object):
 
             motion_value = self.motion.get_motion_detected()
 
-            status = self.eval_thresholds(motion_value, warning, critical)
+            perfdata = {
+                    "motion": motion_value
+            }
             
             if motion_value:
-                output("Motion detected!", motion_value)
+                output("Motion detected!", motion_value, [], perfdata)
             else:
-                output("No motion detected", motion_value)
+                output("No motion detected", motion_value, [], perfdata)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
