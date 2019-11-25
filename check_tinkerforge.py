@@ -54,6 +54,7 @@ from tinkerforge.bricklet_temperature import Temperature
 from tinkerforge.bricklet_ambient_light_v2 import BrickletAmbientLightV2
 from tinkerforge.bricklet_humidity_v2 import BrickletHumidityV2
 from tinkerforge.bricklet_distance_ir_v2 import BrickletDistanceIRV2
+from tinkerforge.bricklet_motion_detector_v2 import BrickletMotionDetectorV2
 
 __version__ = '1.1.0'
 
@@ -110,12 +111,14 @@ class TF(object):
         self.al = None
         self.hum = None
         self.dist = None
+        self.motion = None
 
         self.type_ptc = "ptc"
         self.type_temperature = "temperature"
         self.type_ambient_light = "ambient_light"
         self.type_humidity = "humidity"
         self.type_distance = "distance"
+        self.type_motion = "motion"
 
         self.ipcon = IPConnection()
         self.ipcon.set_timeout(self.timeout)
@@ -174,6 +177,11 @@ class TF(object):
         if device_identifier == BrickletDistanceIRV2.DEVICE_IDENTIFIER:
             self.dist = BrickletDistanceIRV2(uid, self.ipcon)
             self.device_type = self.type_distance
+
+        # https://www.tinkerforge.com/de/doc/Software/Bricklets/MotionDetectorV2_Bricklet_Python.html
+        if device_identifier == BrickletMotionDetectorV2.DEVICE_IDENTIFIER:
+            self.dist = BrickletMotionDetectorV2(uid, self.ipcon)
+            self.device_type = self.type_motion
 
         if self.verbose:
             print("UID:               " + uid)
@@ -355,6 +363,29 @@ class TF(object):
 
             output("Distance is %s cm" % dist_value, status, [], perfdata)
 
+        # Motion
+        # https://www.tinkerforge.com/de/doc/Software/Bricklets/MotionDetectorV2_Bricklet_Python.html
+        if self.device_type == self.type_motion:
+            ticks = 0
+            if uid:
+                self.motion = BrickletMotionDetectorV2(uid, self.ipcon)
+            else:
+                # TODO: refactor
+                while not self.motion:
+                    time.sleep(0.1)
+                    ticks = ticks + 1
+                    if ticks > self.timeout * 10:
+                        output("Timeout %s s reached while detecting bricklet. "
+                               "Please use -u to specify the device UID." % self.timeout, 3)
+
+            motion_value = self.motion.get_motion_detected()
+
+            status = self.eval_thresholds(motion_value, warning, critical)
+            
+            if motion_value:
+                output("Motion detected!", motion_value)
+            else:
+                output("No motion detected", motion_value)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -365,7 +396,7 @@ if __name__ == '__main__':
     parser.add_argument("-S", "--secret", help="Authentication secret")
     parser.add_argument("-u", "--uid", help="UID from Bricklet")
     parser.add_argument("-T", "--type", required=True,
-                        help="Bricklet type. Supported: 'temperature', 'humidity', 'ambient_light', 'ptc', 'distance'")
+                        help="Bricklet type. Supported: 'temperature', 'humidity', 'ambient_light', 'ptc', 'distance', motion'")
     parser.add_argument("-w", "--warning", help="Warning threshold. Single value or range, e.g. '20:50'.")
     parser.add_argument("-c", "--critical", help="Critical threshold. Single vluae or range, e.g. '25:45'.")
     parser.add_argument("-t", "--timeout", help="Timeout in seconds (default 10s)", type=int, default=10)
