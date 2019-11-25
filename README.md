@@ -26,6 +26,7 @@ This Icinga plugin allows you to check the following bricklets:
 * Humidity
 * Ambient Light
 * Distance IR
+* Motion Sensor
 
 Additional features:
 
@@ -74,7 +75,7 @@ optional arguments:
                         Authentication secret
   -u UID, --uid UID     UID from Bricklet
   -T TYPE, --type TYPE  Bricklet type. Supported: 'temperature', 'humidity',
-                        'ambient_light', 'ptc'
+                        'ambient_light', 'ptc', motion'
   -w WARNING, --warning WARNING
                         Warning threshold. Single value or range, e.g.
                         '20:50'.
@@ -144,6 +145,18 @@ OK - Tinkerforge: Distance is 21.6 cm|'distance'=21.6
 check_tinkerforge.py -H 10.0.10.163 -T distance -w 50:60
 WARNING - Tinkerforge: Distance is 40.1 cm|'distance'=40.1
 ```
+
+#### Motion Sensor
+
+```
+check_tinkerforge.py -H 10.0.10.163 -T motion
+OK - Tinkerforge: No motion detected|'motion'=0
+
+check_tinkerforge.py -H 10.0.10.163 -T distance -w 50:60
+WARNING - Tinkerforge: Motion detected!|'motion'=1
+```
+
+
 
 ## Configuration
 
